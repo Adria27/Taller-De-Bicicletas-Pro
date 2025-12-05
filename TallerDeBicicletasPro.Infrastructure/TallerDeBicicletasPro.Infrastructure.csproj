@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Contracts\" />
+    <Folder Include="ExternalServices\" />
+    <Folder Include="Utils\" />
+    <Folder Include="Repositories\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TallerDeBicicletasPro.Application\TallerDeBicicletasPro.Application.csproj" />
+    <ProjectReference Include="..\TallerDeBicicletasPro.Domain\TallerDeBicicletasPro.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
