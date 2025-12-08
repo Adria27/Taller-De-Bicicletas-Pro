@@ -1,27 +1,35 @@
 using Microsoft.EntityFrameworkCore;
 using TallerDeBicicletasPro.Persistence.Context;
+using TallerDeBicicletasPro.Application.Interfaces.Repositories;
+using TallerDeBicicletasPro.Persistence.Repositories;
+using TallerDeBicicletasPro.Application.Interfaces.Services;
+using TallerDeBicicletasPro.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Swagger
+// DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Repositories
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IBicicletaRepository, BicicletaRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IMecanicoRepository, MecanicoRepository>();
+builder.Services.AddScoped<IReparacionRepository, ReparacionRepository>();
+
+// Services
+builder.Services.AddScoped<IBicicletaService, BicicletaService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IMecanicoService, MecanicoService>();
+builder.Services.AddScoped<IReparacionService, ReparacionService>();
+
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// DB Context
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-
-// AutoMapper
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-// Controllers
-builder.Services.AddControllers();
-
 var app = builder.Build();
 
-// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -29,7 +37,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthorization();
 app.MapControllers();
-
 app.Run();

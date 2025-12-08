@@ -1,14 +1,14 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TallerDeBicicletasPro.Application.Interfaces.Repositories
 {
     public interface IGenericRepository<T> where T : class
     {
+        Task<List<T>> GetAllAsync();
         Task<T?> GetByIdAsync(int id);
-        Task<IReadOnlyList<T>> GetAllAsync();
-        Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate);
-        Task<T> AddAsync(T entity);
+        Task AddAsync(T entity);
         Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
+        Task DeleteAsync(int id);
     }
 }

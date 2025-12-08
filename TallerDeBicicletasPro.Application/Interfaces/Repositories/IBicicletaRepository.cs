@@ -6,3 +6,4 @@ namespace TallerDeBicicletasPro.Application.Interfaces.Repositories
     {
     }
 }
+
