@@ -4,8 +4,21 @@ using TallerDeBicicletasPro.Application.Interfaces.Repositories;
 using TallerDeBicicletasPro.Persistence.Repositories;
 using TallerDeBicicletasPro.Application.Interfaces.Services;
 using TallerDeBicicletasPro.Application.Services;
+using TallerDeBicicletasPro.Application.Profiles;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 // DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -24,6 +37,9 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IMecanicoService, MecanicoService>();
 builder.Services.AddScoped<IReparacionService, ReparacionService>();
 
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(TallerProfile).Assembly);
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -37,6 +53,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
+
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
