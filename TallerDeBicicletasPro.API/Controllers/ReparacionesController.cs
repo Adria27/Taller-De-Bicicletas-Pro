@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using System.Threading.Tasks;
 using TallerDeBicicletasPro.Application.Interfaces.Services;
+using TallerDeBicicletasPro.Application.DTOs;
 using TallerDeBicicletasPro.Domain.Entities;
 
 namespace TallerDeBicicletasPro.API.Controllers
@@ -10,53 +12,67 @@ namespace TallerDeBicicletasPro.API.Controllers
     public class ReparacionesController : ControllerBase
     {
         private readonly IReparacionService _service;
+        private readonly IMapper _mapper;
 
-        public ReparacionesController(IReparacionService service)
+        public ReparacionesController(IReparacionService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
-        // GET: api/Reparaciones
+        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _service.GetAllAsync();
-            return Ok(result);
+            var entities = await _service.GetAllAsync();
+            var dtos = _mapper.Map<IEnumerable<ReparacionDto>>(entities);
+            return Ok(dtos);
         }
 
-        // GET: api/Reparaciones/5
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null)
+            var entity = await _service.GetByIdAsync(id);
+            if (entity == null)
                 return NotFound();
 
-            return Ok(result);
+            var dto = _mapper.Map<ReparacionDto>(entity);
+            return Ok(dto);
         }
 
-        // POST: api/Reparaciones
+        
         [HttpPost]
-        public async Task<IActionResult> Create(Reparacion reparacion)
+        public async Task<IActionResult> Create(ReparacionDto dto)
         {
-            await _service.AddAsync(reparacion);
-            return Ok(reparacion);
+            var entity = _mapper.Map<Reparacion>(dto);
+
+            await _service.AddAsync(entity);
+
+            var resultDto = _mapper.Map<ReparacionDto>(entity);
+            return Ok(resultDto);
         }
 
-        // PUT: api/Reparaciones/5
+        
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Reparacion reparacion)
+        public async Task<IActionResult> Update(int id, ReparacionDto dto)
         {
-            reparacion.Id = id;
-            await _service.UpdateAsync(reparacion);
-            return Ok(reparacion);
+            dto.Id = id;
+
+            var entity = _mapper.Map<Reparacion>(dto);
+
+            await _service.UpdateAsync(entity);
+
+            var resultDto = _mapper.Map<ReparacionDto>(entity);
+            return Ok(resultDto);
         }
 
-        // DELETE: api/Reparaciones/5
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
+
             return Ok("Eliminado correctamente");
         }
     }

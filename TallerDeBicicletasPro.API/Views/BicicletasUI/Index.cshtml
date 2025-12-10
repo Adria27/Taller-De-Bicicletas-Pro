@@ -1,0 +1,272 @@
+﻿@{
+    ViewData["Title"] = "Bicicletas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<style>
+    .modal-header {
+        background-color: blueviolet;
+        color: white;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .btn-primary {
+        background-color: blueviolet !important;
+        border-color: blueviolet !important;
+    }
+
+        .btn-primary:hover {
+            background-color: #6a1bbf !important;
+            border-color: #6a1bbf !important;
+        }
+</style>
+
+<div class="container mt-5">
+
+    <h2 class="text-center fw-bold mb-4">Gestión de Bicicletas</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+            ➕ Agregar Bicicleta
+        </button>
+
+        <button class="btn btn-success" onclick="cargarBicicletas()">
+            🔄 Actualizar
+        </button>
+    </div>
+
+    <table class="table table-bordered table-hover text-center" id="tablaBicicletas">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Modelo</th>
+                <th>Color</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<!-- Modal AGREGAR -->
+<div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Bicicleta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input id="addModelo" class="form-control mb-2" placeholder="Modelo" />
+                <input id="addColor" class="form-control mb-2" placeholder="Color" />
+                <input id="addPrecio" type="number" class="form-control mb-2" placeholder="Precio" />
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="crearBicicleta()">Guardar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal EDITAR -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Bicicleta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input id="editId" type="hidden" />
+                <input id="editModelo" class="form-control mb-2" placeholder="Modelo" />
+                <input id="editColor" class="form-control mb-2" placeholder="Color" />
+                <input id="editPrecio" type="number" class="form-control mb-2" placeholder="Precio" />
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-warning" onclick="actualizarBicicleta()">Actualizar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // ✅ Usa ruta relativa para que funcione con cualquier puerto
+    const API = "/api/Bicicletas";
+
+    // ==========================
+    //  CARGAR TABLA
+    // ==========================
+    async function cargarBicicletas() {
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error("Error al obtener bicicletas");
+
+            const data = await res.json();
+            const tbody = document.querySelector("#tablaBicicletas tbody");
+            tbody.innerHTML = "";
+
+            data.forEach(b => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${b.id}</td>
+                        <td>${b.modelo}</td>
+                        <td>${b.color}</td>
+                        <td>${b.precio}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="mostrarEditar(${b.id})">Editar</button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarBicicleta(${b.id})">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+        } catch (e) {
+            console.error(e);
+            alert("No se pudieron cargar las bicicletas");
+        }
+    }
+
+    // Cargar al entrar a la página
+    cargarBicicletas();
+
+    // ==========================
+    //  CREAR BICICLETA
+    // ==========================
+    async function crearBicicleta() {
+        const dto = {
+            modelo: document.getElementById("addModelo").value,
+            color: document.getElementById("addColor").value,
+            precio: parseFloat(document.getElementById("addPrecio").value)
+        };
+
+        try {
+            const res = await fetch(API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dto)
+            });
+
+            if (!res.ok) throw new Error("Error al crear bicicleta");
+
+            alert("Bicicleta agregada correctamente");
+
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalAgregar"));
+            modal.hide();
+
+            // Limpiar inputs
+            document.getElementById("addModelo").value = "";
+            document.getElementById("addColor").value = "";
+            document.getElementById("addPrecio").value = "";
+
+            // 🔄 Recargar tabla
+            await cargarBicicletas();
+
+        } catch (e) {
+            console.error(e);
+            alert("No se pudo agregar la bicicleta");
+        }
+    }
+
+    // ==========================
+    //  MOSTRAR DATOS EN MODAL EDITAR
+    // ==========================
+    async function mostrarEditar(id) {
+        try {
+            const res = await fetch(`${API}/${id}`);
+            if (!res.ok) throw new Error("Error al obtener bicicleta");
+
+            const b = await res.json();
+
+            document.getElementById("editId").value = b.id;
+            document.getElementById("editModelo").value = b.modelo;
+            document.getElementById("editColor").value = b.color;
+            document.getElementById("editPrecio").value = b.precio;
+
+            new bootstrap.Modal(document.getElementById("modalEditar")).show();
+
+        } catch (e) {
+            console.error(e);
+            alert("No se pudo cargar la bicicleta a editar");
+        }
+    }
+
+    // ==========================
+    //  ACTUALIZAR BICICLETA
+    // ==========================
+    async function actualizarBicicleta() {
+        const id = document.getElementById("editId").value;
+
+        const dto = {
+            id: id,
+            modelo: document.getElementById("editModelo").value,
+            color: document.getElementById("editColor").value,
+            precio: parseFloat(document.getElementById("editPrecio").value)
+        };
+
+        try {
+            const res = await fetch(`${API}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dto)
+            });
+
+            if (!res.ok) throw new Error("Error al actualizar bicicleta");
+
+            alert("Bicicleta actualizada correctamente");
+
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalEditar"));
+            modal.hide();
+
+            // 🔄 Recargar tabla
+            await cargarBicicletas();
+
+        } catch (e) {
+            console.error(e);
+            alert("No se pudo actualizar la bicicleta");
+        }
+    }
+
+    // ==========================
+    //  ELIMINAR BICICLETA
+    // ==========================
+    async function eliminarBicicleta(id) {
+        if (!confirm("¿Eliminar esta bicicleta?")) return;
+
+        try {
+            const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Error al eliminar bicicleta");
+
+            alert("Bicicleta eliminada");
+
+            // 🔄 Recargar tabla
+            await cargarBicicletas();
+
+        } catch (e) {
+            console.error(e);
+            alert("No se pudo eliminar la bicicleta");
+        }
+    }
+</script>

@@ -1,0 +1,111 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+<style>
+    body {
+        background-color: #e9ecef;
+    }
+
+    header {
+        background-color: #ffd6ff;
+        padding: 40px 0;
+        color: white;
+        text-align: center;
+        margin-bottom: 40px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .card-custom {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.2s ease;
+        box-shadow: 0px 3px 8px rgba(0,0,0,0.15);
+        min-height: 180px;
+    }
+
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 6px 16px rgba(0,0,0,0.25);
+        }
+
+    footer {
+        text-align: center;
+        margin-top: 40px;
+        padding: 15px;
+        color: gray;
+    }
+
+    /* Estilos del baner */
+    .banner-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin: 40px 0;
+    }
+
+    .banner-img {
+        width: 80%;
+        max-width: 1300px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>
+
+
+<header>
+    <h1 class="fw-bold">Taller de Bicicletas</h1>
+    <p>Panel Principal del Sistema</p>
+</header>
+
+<div class="container">
+    <div class="row justify-content-center g-4">
+
+        <div class="col-md-3">
+            <div class="card card-custom text-center">
+                <h5 class="fw-bold">Bicicletas</h5>
+                <p>Gestión completa del inventario de bicicletas.</p>
+                <a href="/BicicletasUI/Index" class="btn btn-primary">Ir a Bicicletas</a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-custom text-center">
+                <h5 class="fw-bold">Clientes</h5>
+                <p>Información y control de clientes registrados.</p>
+                <a href="/ClientesUI/Index" class="btn btn-primary">Ir a Clientes</a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-custom text-center">
+                <h5 class="fw-bold">Mecánicos</h5>
+                <p>Administración del personal mecánico.</p>
+                <a href="/MecanicosUI/Index" class="btn btn-primary">Ir a Mecánicos</a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-custom text-center">
+                <h5 class="fw-bold">Reparaciones</h5>
+                <p>Control y seguimiento de reparaciones activas.</p>
+                <a href="/ReparacionesUI/Index" class="btn btn-primary">Ir a Reparaciones</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<footer>
+
+    <!-- 🟦 Banner corregido -->
+    <div class="banner-container">
+        <img src="/img/bici-banner.png" class="banner-img" alt="Imagen de bicicleta">
+    </div>
+
+    Sistema Taller de Bicicletas — 2025
+</footer>

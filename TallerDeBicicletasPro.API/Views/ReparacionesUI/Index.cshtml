@@ -1,0 +1,275 @@
+﻿@{
+    ViewData["Title"] = "Reparaciones";
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    .modal-header {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
+
+<div class="container mt-5">
+
+    <h2 class="text-center fw-bold mb-4">Gestión de Reparaciones</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+            ➕ Agregar Reparación
+        </button>
+
+        <button class="btn btn-success" onclick="cargarReparaciones()">
+            🔄 Actualizar
+        </button>
+    </div>
+
+    <table class="table table-bordered table-hover text-center" id="tablaReparaciones">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Costo</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Bicicleta</th>
+                <th>Mecánico</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<!-- =============== MODAL AGREGAR ================= -->
+<div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Reparación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <textarea id="addDescripcion" class="form-control mb-2" placeholder="Descripción"></textarea>
+                <input id="addCosto" type="number" class="form-control mb-2" placeholder="Costo">
+                <input id="addEntrada" type="date" class="form-control mb-2">
+                <input id="addSalida" type="date" class="form-control mb-2">
+
+                <select id="addBicicleta" class="form-select mb-2"></select>
+                <select id="addMecanico" class="form-select mb-2"></select>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="crearReparacion()">Guardar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- =============== MODAL EDITAR ================= -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Reparación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input id="editId" type="hidden">
+
+                <textarea id="editDescripcion" class="form-control mb-2"></textarea>
+                <input id="editCosto" type="number" class="form-control mb-2">
+                <input id="editEntrada" type="date" class="form-control mb-2">
+                <input id="editSalida" type="date" class="form-control mb-2">
+
+                <select id="editBicicleta" class="form-select mb-2"></select>
+                <select id="editMecanico" class="form-select mb-2"></select>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-warning" onclick="actualizarReparacion()">Actualizar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+    const API = "https://localhost:7159/api/Reparaciones";
+    const API_BICICLETAS = "https://localhost:7159/api/Bicicletas";
+    const API_MECANICOS = "https://localhost:7159/api/Mecanicos";
+
+
+    // ==================== CARGAR LISTAS =====================
+    async function cargarSelects() {
+
+        // Bicicletas
+        const bicis = await (await fetch(API_BICICLETAS)).json();
+        const selectAddB = document.getElementById("addBicicleta");
+        const selectEditB = document.getElementById("editBicicleta");
+
+        selectAddB.innerHTML = "";
+        selectEditB.innerHTML = "";
+
+        bicis.forEach(b => {
+            const opt = `<option value="${b.id}">${b.nombre}</option>`;
+            selectAddB.innerHTML += opt;
+            selectEditB.innerHTML += opt;
+        });
+
+        // Mecánicos
+        const mecs = await (await fetch(API_MECANICOS)).json();
+        const selectAddM = document.getElementById("addMecanico");
+        const selectEditM = document.getElementById("editMecanico");
+
+        selectAddM.innerHTML = "";
+        selectEditM.innerHTML = "";
+
+        mecs.forEach(m => {
+            const opt = `<option value="${m.id}">${m.nombre}</option>`;
+            selectAddM.innerHTML += opt;
+            selectEditM.innerHTML += opt;
+        });
+
+    }
+
+    cargarSelects();
+
+
+    // ==================== CARGAR REPARACIONES =====================
+    async function cargarReparaciones() {
+        const res = await fetch(API);
+        const data = await res.json();
+
+        const tbody = document.querySelector("#tablaReparaciones tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(r => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${r.id}</td>
+                    <td>${r.descripcion}</td>
+                    <td>$${r.costo}</td>
+                    <td>${formatFecha(r.fechaEntrada)}</td>
+                    <td>${formatFecha(r.fechaSalida)}</td>
+                    <td>${r.bicicletaId}</td>
+                    <td>${r.mecanicoId}</td>
+
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="mostrarEditar(${r.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarReparacion(${r.id})">Eliminar</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    cargarReparaciones();
+
+    function formatFecha(fecha) {
+        if (!fecha) return "";
+        return fecha.split("T")[0];
+    }
+
+
+    // ==================== CREAR =====================
+    async function crearReparacion() {
+
+        const dto = {
+            descripcion: document.getElementById("addDescripcion").value,
+            costo: document.getElementById("addCosto").value,
+            fechaEntrada: document.getElementById("addEntrada").value,
+            fechaSalida: document.getElementById("addSalida").value,
+            bicicletaId: document.getElementById("addBicicleta").value,
+            mecanicoId: document.getElementById("addMecanico").value
+        };
+
+        await fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dto)
+        });
+
+        cargarReparaciones();
+        alert("Reparación agregada correctamente");
+    }
+
+
+    // ==================== MOSTRAR MODAL EDITAR =====================
+    async function mostrarEditar(id) {
+        const r = await (await fetch(`${API}/${id}`)).json();
+
+        document.getElementById("editId").value = r.id;
+
+        document.getElementById("editDescripcion").value = r.descripcion;
+        document.getElementById("editCosto").value = r.costo;
+        document.getElementById("editEntrada").value = formatFecha(r.fechaEntrada);
+        document.getElementById("editSalida").value = formatFecha(r.fechaSalida);
+
+        await cargarSelects();
+
+        document.getElementById("editBicicleta").value = r.bicicletaId;
+        document.getElementById("editMecanico").value = r.mecanicoId;
+
+        new bootstrap.Modal(document.getElementById("modalEditar")).show();
+    }
+
+
+    // ==================== ACTUALIZAR =====================
+    async function actualizarReparacion() {
+        const id = document.getElementById("editId").value;
+
+        const dto = {
+            id: id,
+            descripcion: document.getElementById("editDescripcion").value,
+            costo: document.getElementById("editCosto").value,
+            fechaEntrada: document.getElementById("editEntrada").value,
+            fechaSalida: document.getElementById("editSalida").value,
+            bicicletaId: document.getElementById("editBicicleta").value,
+            mecanicoId: document.getElementById("editMecanico").value
+        };
+
+        await fetch(`${API}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dto)
+        });
+
+        cargarReparaciones();
+        alert("Reparación actualizada correctamente");
+    }
+
+
+    // ==================== ELIMINAR =====================
+    async function eliminarReparacion(id) {
+        if (!confirm("¿Eliminar esta reparación?")) return;
+
+        await fetch(`${API}/${id}`, { method: "DELETE" });
+
+        cargarReparaciones();
+        alert("Reparación eliminada");
+    }
+
+</script>
+</script>

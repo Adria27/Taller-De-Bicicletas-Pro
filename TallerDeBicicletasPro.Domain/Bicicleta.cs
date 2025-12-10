@@ -1,18 +1,14 @@
-﻿
-
-namespace TallerDeBicicletasPro.Domain.Entities;
+﻿namespace TallerDeBicicletasPro.Domain.Entities;
 
 public class Bicicleta
 {
     public int Id { get; set; }
-    public string Marca { get; set; } = string.Empty;
+
+    // Campos reales usados en la UI y DTO
     public string Modelo { get; set; } = string.Empty;
-    public int Año { get; set; }
+    public string Color { get; set; } = string.Empty;
+    public decimal Precio { get; set; }
 
-    // Relación con Cliente
-    public int ClienteId { get; set; }
-    public Cliente? Cliente { get; set; }
-
-    // Relación con Reparaciones
+    // Relaciones (opcional por ahora)
     public List<Reparacion> Reparaciones { get; set; } = new();
 }

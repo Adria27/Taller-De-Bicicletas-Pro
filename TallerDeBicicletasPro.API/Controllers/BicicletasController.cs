@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// TallerDeBicicletasPro.API/Controllers/BicicletasController.cs
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using TallerDeBicicletasPro.Application.DTOs;
 using TallerDeBicicletasPro.Application.Interfaces.Services;
 using TallerDeBicicletasPro.Domain.Entities;
 
@@ -10,68 +13,67 @@ namespace TallerDeBicicletasPro.API.Controllers
     [Route("api/[controller]")]
     public class BicicletasController : ControllerBase
     {
-        private readonly IBicicletaService _bicicletaService;
+        private readonly IBicicletaService _service;
+        private readonly IMapper _mapper;
 
-        public BicicletasController(IBicicletaService bicicletaService)
+        public BicicletasController(IBicicletaService service, IMapper mapper)
         {
-            _bicicletaService = bicicletaService;
+            _service = service;
+            _mapper = mapper;
         }
 
         // GET: api/Bicicletas
         [HttpGet]
-        public async Task<ActionResult<List<Bicicleta>>> Get()
+        public async Task<IActionResult> GetAll()
         {
-            var bicicletas = await _bicicletaService.GetAllAsync();
-            return Ok(bicicletas);
+            var entities = await _service.GetAllAsync();
+            var dtos = _mapper.Map<IEnumerable<BicicletaDto>>(entities);
+            return Ok(dtos);
         }
 
         // GET: api/Bicicletas/5
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<Bicicleta>> GetById(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            var bicicleta = await _bicicletaService.GetByIdAsync(id);
-
-            if (bicicleta == null)
+            var entity = await _service.GetByIdAsync(id);
+            if (entity == null)
                 return NotFound();
 
-            return Ok(bicicleta);
+            var dto = _mapper.Map<BicicletaDto>(entity);
+            return Ok(dto);
         }
 
         // POST: api/Bicicletas
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Bicicleta bicicleta)
+        public async Task<IActionResult> Create(BicicletaDto dto)
         {
-            if (bicicleta == null)
-                return BadRequest();
+            var entity = _mapper.Map<Bicicleta>(dto);
+            await _service.AddAsync(entity);
 
-            await _bicicletaService.AddAsync(bicicleta);
-
-            // Por ahora devolvemos solo Ok. Más adelante
-            // podemos mejorar a CreatedAtAction si quieres.
-            return Ok();
+            var resultDto = _mapper.Map<BicicletaDto>(entity);
+            return Ok(resultDto);
         }
 
         // PUT: api/Bicicletas/5
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Bicicleta bicicleta)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, BicicletaDto dto)
         {
-            if (bicicleta == null)
-                return BadRequest();
+            dto.Id = id;
+            var entity = _mapper.Map<Bicicleta>(dto);
 
-            // Si tu entidad tiene propiedad Id, puedes validar aquí:
-            // if (id != bicicleta.Id) return BadRequest();
+            await _service.UpdateAsync(entity);
 
-            await _bicicletaService.UpdateAsync(bicicleta);
-
-            return NoContent();
+            var resultDto = _mapper.Map<BicicletaDto>(entity);
+            return Ok(resultDto);
         }
 
         // DELETE: api/Bicicletas/5
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _bicicletaService.DeleteAsync(id);
-            return NoContent();
+            // No importa si DeleteAsync devuelve Task o Task<bool>, ignoramos el valor
+            await _service.DeleteAsync(id);
+            return Ok("Eliminado correctamente");
         }
     }
 }

@@ -1,0 +1,199 @@
+﻿@{
+    ViewData["Title"] = "Clientes";
+     Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    .modal-header {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
+
+<div class="container mt-5">
+
+    <h2 class="text-center fw-bold mb-4">Gestión de Clientes</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+            ➕ Agregar Cliente
+        </button>
+
+        <button class="btn btn-success" onclick="cargarClientes()">
+            🔄 Actualizar
+        </button>
+    </div>
+
+    <table class="table table-bordered table-hover text-center" id="tablaClientes">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Telefono</th>
+                <th>Email</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<!-- Modal AGREGAR -->
+<div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input id="addNombre" class="form-control mb-2" placeholder="Nombre">
+                <input id="addTelefono" class="form-control mb-2" placeholder="Teléfono">
+                <input id="addEmail" class="form-control mb-2" placeholder="Correo electrónico">
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="crearCliente()">Guardar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal EDITAR -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input id="editId" type="hidden">
+                <input id="editNombre" class="form-control mb-2" placeholder="Nombre">
+                <input id="editTelefono" class="form-control mb-2" placeholder="Teléfono">
+                <input id="editEmail" class="form-control mb-2" placeholder="Correo electrónico">
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-warning" onclick="actualizarCliente()">Actualizar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+    const API = "https://localhost:7159/api/Clientes";
+
+    async function cargarClientes() {
+        const res = await fetch(API);
+        const data = await res.json();
+
+        const tbody = document.querySelector("#tablaClientes tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(c => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${c.id}</td>
+                    <td>${c.nombre}</td>
+                    <td>${c.telefono}</td>
+                    <td>${c.email}</td>
+
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="mostrarEditar(${c.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarCliente(${c.id})">Eliminar</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    cargarClientes();
+
+
+    // CREAR CLIENTE
+    async function crearCliente() {
+        const dto = {
+            nombre: document.getElementById("addNombre").value,
+            telefono: document.getElementById("addTelefono").value,
+            email: document.getElementById("addEmail").value
+        };
+
+        await fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dto)
+        });
+
+        cargarClientes();
+        alert("Cliente agregado correctamente");
+    }
+
+
+    // MOSTRAR CLIENTE EN MODAL EDITAR
+    async function mostrarEditar(id) {
+        const res = await fetch(`${API}/${id}`);
+        const c = await res.json();
+
+        document.getElementById("editId").value = c.id;
+        document.getElementById("editNombre").value = c.nombre;
+        document.getElementById("editTelefono").value = c.telefono;
+        document.getElementById("editEmail").value = c.email;
+
+        new bootstrap.Modal(document.getElementById("modalEditar")).show();
+    }
+
+    // ACTUALIZAR CLIENTE
+    async function actualizarCliente() {
+        const id = document.getElementById("editId").value;
+
+        const dto = {
+            id: id,
+            nombre: document.getElementById("editNombre").value,
+            telefono: document.getElementById("editTelefono").value,
+            email: document.getElementById("editEmail").value
+        };
+
+        await fetch(`${API}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dto)
+        });
+
+        cargarClientes();
+        alert("Cliente actualizado correctamente");
+    }
+
+
+    // ELIMINAR CLIENTE
+    async function eliminarCliente(id) {
+        if (!confirm("¿Eliminar este cliente?")) return;
+
+        await fetch(`${API}/${id}`, { method: "DELETE" });
+
+        cargarClientes();
+        alert("Cliente eliminado");
+    }
+
+</script>

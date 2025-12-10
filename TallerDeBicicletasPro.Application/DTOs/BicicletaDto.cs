@@ -3,9 +3,10 @@
     public class BicicletaDto
     {
         public int Id { get; set; }
-        public string Marca { get; set; } = string.Empty;
+
+        // Solo los datos que realmente usas en la UI
         public string Modelo { get; set; } = string.Empty;
-        public int Ano { get; set; }
-        public int ClienteId { get; set; }
+        public string Color { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TallerDeBicicletasPro.Persistence.Context;
 
@@ -11,9 +12,11 @@ using TallerDeBicicletasPro.Persistence.Context;
 namespace TallerDeBicicletasPro.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209130545_1")]
+    partial class _1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,21 +33,21 @@ namespace TallerDeBicicletasPro.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClienteId")
+                    b.Property<int>("Año")
                         .HasColumnType("int");
 
-                    b.Property<string>("Color")
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Marca")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Modelo")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("Precio")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -150,9 +153,13 @@ namespace TallerDeBicicletasPro.Persistence.Migrations
 
             modelBuilder.Entity("TallerDeBicicletasPro.Domain.Entities.Bicicleta", b =>
                 {
-                    b.HasOne("TallerDeBicicletasPro.Domain.Entities.Cliente", null)
+                    b.HasOne("TallerDeBicicletasPro.Domain.Entities.Cliente", "Cliente")
                         .WithMany("Bicicletas")
-                        .HasForeignKey("ClienteId");
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
                 });
 
             modelBuilder.Entity("TallerDeBicicletasPro.Domain.Entities.Reparacion", b =>

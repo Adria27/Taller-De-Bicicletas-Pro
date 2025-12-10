@@ -1,4 +1,5 @@
 ﻿namespace TallerDeBicicletasPro.Application.DTOs
+
 {
     public class MecanicoDto
     {
